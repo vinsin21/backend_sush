@@ -102,3 +102,5 @@ puppeteer/
 # Optional environment settings
 .env.local
 .env.*.local
+.env.*
+.env

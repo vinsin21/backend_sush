@@ -9,7 +9,7 @@ const json = require("body-parser/lib/types/json");
 const app = express();
 
 dotenv.config({ path: "./secret.env" });
-app.use(cors({}));
+app.use(cors({ origin: "*" }));
 app.use(json());
 app.use(urlencoded({ extended: true }));
 

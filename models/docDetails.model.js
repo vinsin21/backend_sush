@@ -7,6 +7,10 @@ const docDetailsSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    detailsId: {
+      type: String,
+      required: true,
+    },
     experience: {
       type: Number,
       default: 0,
@@ -111,7 +115,15 @@ const docDetailsSchema = new mongoose.Schema(
     specializedAreas: [
       {
         type: String,
-        enum: ["genetics", "transplant-surgery"],
+        enum: [
+          "genetics",
+          "cardio-vascular",
+          "orthopedics",
+          "homeopathy",
+          "nureo-surgery",
+          "transplant-surgery",
+          "ear-nose-throat",
+        ],
         default: "genetics",
       },
     ],

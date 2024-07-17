@@ -2,19 +2,27 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/**/*.js",
-      "use": "@vercel/node" 
+      "src": "index.js",
+      "use": "@vercel/node"
 
     }
   ],
   "routes": [
     {
-      "src": "/api/v1/(.*)",
-      "dest": "/api/v1/$1"  
+      "src": "/",
+      "dest": "index.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/$1"  
+      "src": "/api/v1/auth",
+      "dest": "routes/auth/user.routes.js"
+    },
+    {
+      "src": "/api/v1/doc/details",
+      "dest": "routes/app/docDetails.routes.js"
+    },
+    {
+      "src": "/api/v1/doc/timeslots",
+      "dest": "routes/app/docTimeslots.routes.js"
     }
   ]
 }

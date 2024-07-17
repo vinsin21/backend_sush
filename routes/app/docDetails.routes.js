@@ -1,13 +1,17 @@
 const {
   insertDocDetails,
   updateDocDetails,
-} = require("../../controllers/app/doc.controller");
+  getCurrDocDetails,
+} = require("../../controllers/app/docDetails.controller");
+const { verifyJwt } = require("../../middlewares/auth.middleware");
 const { upload } = require("../../middlewares/multer.middleware");
 
 const router = require("express").Router();
 
+router.use(verifyJwt);
+
 router
-  .route("/doctor")
+  .route("/")
   .post(upload.array("professionalCertificates", 6), insertDocDetails)
   .get(getCurrDocDetails)
   .patch(upload.array("professionalCertificates", 6), updateDocDetails);

@@ -1,13 +1,25 @@
 const crypto = require("crypto");
 const DocDetails = require("../../models/docDetails.model");
+const fs = require("fs");
 const { ApiError } = require("../../utils/ApiError");
 const { ApiResponse } = require("../../utils/ApiResponse");
 const { fieldValidator } = require("../../helper/fieldvalidator.helper");
+const {
+  relativePathGenerator,
+  absolutePathGenerator,
+} = require("../../utils/pathGenerators");
 
 const insertDocDetails = async (req, res) => {
   try {
-    if (!req.user?._id || req.role !== "DOCTOR")
-      throw new ApiError(401, "invalid user credentials");
+    if (!req.user?._id || req.role !== "DOCTOR") {
+      throw new ApiError(401, "Invalid user credentials");
+    }
+
+    if (await DocDetails.findOne({ userRef: req.user?._id }))
+      throw new ApiError(
+        409,
+        "user's/ doc's details already exists in the system"
+      );
 
     const validFields = [
       "experience",
@@ -30,45 +42,60 @@ const insertDocDetails = async (req, res) => {
       requestedFields
     );
 
-    if (invalidFields.length || missingFields.length)
+    if (invalidFields.length || missingFields.length) {
       throw new ApiError(
         400,
-        `${invalidFields.length ? invalidFields : ""} are invalid, ${
-          missingFields.length ? missingFields : ""
-        } are missing`
+        `${
+          invalidFields.length
+            ? `Invalid fields: ${invalidFields.join(", ")}`
+            : ""
+        }${invalidFields.length && missingFields.length ? ", " : ""}${
+          missingFields.length
+            ? `Missing fields: ${missingFields.join(", ")}`
+            : ""
+        }`
       );
+    }
 
-    if (!req.files.length) throw new ApiError(400, "no files found in request");
+    // Convert req.files to an array if it's an object
+    const filesArray = Array.isArray(req.files)
+      ? req.files
+      : Object.values(req.files);
 
-    const pathArr = [];
+    if (filesArray.length === 0) {
+      throw new ApiError(400, "No files found in request");
+    }
 
-    req.files.forEach((file) => {
-      const relativePath = relativePathGenerator(file.path);
-      console.log("fp", file.path);
-      console.log("rp", relativePath);
-      pathArr.push(relativePath);
-    });
+    // Generate relative paths for the uploaded files
+    const professionalCertificates = relativePathGenerator(filesArray);
+
+    if (professionalCertificates.length !== filesArray.length) {
+      throw new ApiError(500, "File upload unsuccessful");
+    }
 
     const detailsAlreadyExists = await DocDetails.findOne({
-      userRef: req.user?._id,
+      userRef: req.user._id,
     });
 
-    if (detailsAlreadyExists)
+    if (detailsAlreadyExists) {
       throw new ApiError(
         409,
-        "details with current user already exists in the system"
+        "Details with current user already exist in the system"
       );
+    }
 
-    requestedFields.professionalCertificates = pathArr;
+    requestedFields.professionalCertificates = professionalCertificates;
 
-    const detailsId = crypto.randomUUID();
+    const detailsId = crypto.randomUUID(); // Or use uuidv4() if crypto.randomUUID() is not supported
     const newDetails = await DocDetails.create({
+      userRef: req.user?._id,
       detailsId,
       ...requestedFields,
     });
 
-    if (!newDetails)
-      throw new ApiError(500, "doc details addition unsuccessful");
+    if (!newDetails) {
+      throw new ApiError(500, "Doc details addition unsuccessful");
+    }
 
     return res
       .status(201)
@@ -76,18 +103,28 @@ const insertDocDetails = async (req, res) => {
         new ApiResponse(
           201,
           { newDetails },
-          "doctor credentials inserted in db successfully"
+          "Doctor credentials inserted in DB successfully"
         )
       );
   } catch (error) {
-    console.error("error occured :", error?.message);
+    console.error("Error occurred:", error.message);
+
+    // Clean up uploaded files
+    const filesArray = Array.isArray(req.files)
+      ? req.files
+      : Object.values(req.files);
+    filesArray.forEach((file) => {
+      fs.unlink(file.path, (err) => {
+        if (err) console.error(`Failed to delete file at ${file.path}:`, err);
+      });
+    });
 
     return res
-      .status(error?.statusCode || 500)
+      .status(error.statusCode || 500)
       .send(
         new ApiError(
-          error?.statusCode || 500,
-          error?.message || "internal server error"
+          error.statusCode || 500,
+          error.message || "Internal server error"
         )
       );
   }
@@ -134,9 +171,6 @@ const getCurrDocDetails = async (req, res) => {
 
 const updateDocDetails = async (req, res) => {
   try {
-    // we need to unlink the existing files too in this and that's pending
-    // after that only we'll update the current user with docs
-
     if (!req.user?._id || req.role !== "DOCTOR")
       throw new ApiError(401, "invalid user credentials");
 
@@ -161,15 +195,35 @@ const updateDocDetails = async (req, res) => {
     if (invalidFields.length)
       throw new ApiError(400, `${invalidFields} are invalid`);
 
-    const pathArr = [];
-    if (req.files) {
-      req.files.forEach((file) => {
-        const relativePath = relativePathGenerator(file.path);
-        pathArr.push(relativePath);
-      });
+    const docDetailsExists = await DocDetails.findOne({
+      userRef: req.user?._id,
+    });
+
+    if (!docDetailsExists)
+      throw new ApiError(
+        404,
+        "current user's/doctor's details not found in the system"
+      );
+
+    const absolutePath = absolutePathGenerator(
+      docDetailsExists.professionalCertificates
+    );
+
+    for (let i = 0; i < absolutePath.length; i++) {
+      fs.unlinkSync(absolutePath[i]);
     }
 
-    requestedFields.professionalCertificates = pathArr;
+    let professionalCertificates = [];
+
+    if (req.files.length) {
+      const filesArray = Array.isArray(req.files)
+        ? req.files
+        : Object.values(req.files);
+
+      professionalCertificates = relativePathGenerator(filesArray);
+    }
+
+    requestedFields.professionalCertificates = professionalCertificates;
 
     const upDocDtls = await DocDetails.findOneAndUpdate(
       { userRef: req.user?._id },
@@ -180,10 +234,7 @@ const updateDocDetails = async (req, res) => {
     ).select("-_id -userRef -__v");
 
     if (!upDocDtls)
-      throw new ApiError(
-        404,
-        "current user's doc not found to be updated, try uploading your details first"
-      );
+      throw new ApiError(500, "unable to update doctor's doc & details");
 
     return res
       .status(200)

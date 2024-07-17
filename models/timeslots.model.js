@@ -8,7 +8,7 @@ const timeslotsSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    docId: {
+    timeslotId: {
       type: String,
       required: true,
       trim: true,
@@ -32,33 +32,26 @@ const timeslotsSchema = new mongoose.Schema(
         "SATURDAY",
       ],
     },
-    availableFrom: {
+    availableFromTime: {
       type: Date,
       required: true,
     },
-    availableTo: {
+    availableToTime: {
       type: Date,
       required: true,
     },
-    timeslots: {
-      startFrom: {
-        type: Date,
-        required: true,
+    timeslots: [
+      {
+        startFrom: {
+          type: Date,
+          required: true,
+        },
+        endAt: {
+          type: Date,
+          required: true,
+        },
       },
-      endAt: {
-        type: Date,
-        required: true,
-      },
-      bookedByUser: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        trim: true,
-      },
-      isBooked: {
-        type: Boolean,
-        default: false,
-      },
-    },
+    ],
   },
   { timestamps: true }
 );

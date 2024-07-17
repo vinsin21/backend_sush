@@ -19,7 +19,7 @@ app.use(urlencoded({ extended: true }));
 
 dbConnect();
 
-app.get("/", (req, res) => {
+app.get("/home", (req, res) => {
   res.status(200).send({ message: "HOME PAGE", statusCode: 200 });
 });
 

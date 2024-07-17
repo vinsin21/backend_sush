@@ -27,10 +27,14 @@ const bookingsSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    isCancelled:{
-      type:Boolean,
-      default:false
-    }
+    onDate: {
+      type: Date,
+      required: true,
+    },
+    isCancelled: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

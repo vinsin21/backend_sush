@@ -1,10 +1,14 @@
 const { urlencoded } = require("body-parser");
+const json = require("body-parser/lib/types/json");
+
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
+
 const { dbConnect } = require("./db/dbConnect");
 const authRouter = require("./routes/auth/user.routes");
-const json = require("body-parser/lib/types/json");
+const docDetailsRouter = require("./routes/app/docDetails.routes");
+const docTimeSlotsRouter = require("./routes/app/docTimeslots.routes");
 
 const app = express();
 
@@ -21,6 +25,8 @@ app.get("/", (req, res) => {
 
 // routes will come here
 app.use("/api/v1/", authRouter.router);
+app.use("/api/v1/doc/details", docDetailsRouter.router);
+app.use("/api/v1/doc/timeslots", docTimeSlotsRouter.router);
 
 // routes will end here
 

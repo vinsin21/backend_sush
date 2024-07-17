@@ -20,3 +20,5 @@ const verifyJwt = async (req, res, next) => {
     throw new ApiError(401, error?.message || "invalid access token");
   }
 };
+
+module.exports = { verifyJwt };

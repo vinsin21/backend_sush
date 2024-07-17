@@ -54,6 +54,10 @@ const timeslotsSchema = new mongoose.Schema(
         ref: "User",
         trim: true,
       },
+      isBooked: {
+        type: Boolean,
+        default: false,
+      },
     },
   },
   { timestamps: true }

@@ -19,12 +19,12 @@ app.use(urlencoded({ extended: true }));
 
 dbConnect();
 
-app.get("/home", (req, res) => {
+app.get("/", (req, res) => {
   res.status(200).send({ message: "HOME PAGE", statusCode: 200 });
 });
 
 // routes will come here
-app.use("/api/v1/", authRouter.router);
+app.use("/api/v1", authRouter.router);
 app.use("/api/v1/doc/details", docDetailsRouter.router);
 app.use("/api/v1/doc/timeslots", docTimeSlotsRouter.router);
 

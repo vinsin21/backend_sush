@@ -7,8 +7,10 @@ const express = require("express");
 
 const { dbConnect } = require("./db/dbConnect");
 const authRouter = require("./routes/auth/user.routes");
+const publicApisRouter = require("./routes/app/publicApis.routes");
 const docDetailsRouter = require("./routes/app/docDetails.routes");
 const docTimeSlotsRouter = require("./routes/app/docTimeslots.routes");
+const prescriptionRouter = require("./routes/app/prescription.routes");
 
 const app = express();
 
@@ -25,8 +27,11 @@ app.get("/", (req, res) => {
 
 // routes will come here
 app.use("/api/v1", authRouter.router);
+app.use("/api/v1/doc", authRouter.router);
+app.use("/api/v1/public/doc", publicApisRouter.router);
 app.use("/api/v1/doc/details", docDetailsRouter.router);
 app.use("/api/v1/doc/timeslots", docTimeSlotsRouter.router);
+app.use("/api/v1/doc/prescription", prescriptionRouter.router);
 
 // routes will end here
 

@@ -4,25 +4,12 @@
     {
       "src": "index.js",
       "use": "@vercel/node"
-
     }
   ],
   "routes": [
     {
-      "src": "/",
+      "src": "/(.*)",
       "dest": "index.js"
-    },
-    {
-      "src": "/api/v1/auth",
-      "dest": "routes/auth/user.routes.js"
-    },
-    {
-      "src": "/api/v1/doc/details",
-      "dest": "routes/app/docDetails.routes.js"
-    },
-    {
-      "src": "/api/v1/doc/timeslots",
-      "dest": "routes/app/docTimeslots.routes.js"
     }
   ]
 }

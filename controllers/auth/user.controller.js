@@ -46,12 +46,7 @@ const userRegister = async (req, res) => {
       text: `Name: ${newUser.name}\nEmail: ${newUser.email}\nMessage: Your OTP ${otp}`,
     };
 
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log("Email sent successfully");
-    } catch (error) {
-      console.error("Error occurred:", error?.message);
-    }
+    await transporter.sendMail(mailOptions);
 
     return res
       .status(201)
@@ -114,6 +109,15 @@ const verifyAccount = async (req, res) => {
       },
     });
 
+    const mailOptions = {
+      from: process.env.EMAIL || "",
+      to: newUser.email,
+      subject: "Account Verification Successful",
+      text: `Name: ${newUser.name}\nEmail: ${newUser.email}\nMessage: Your account has be verified successfully `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
     return res
       .status(200)
       .send(new ApiResponse(200, {}, "user verified successfully"));
@@ -140,6 +144,8 @@ const userLogin = async (req, res) => {
       validFields,
       requestedFields
     );
+
+    console.log(invalidFields, missingFields);
 
     if (invalidFields.length || missingFields.length)
       throw new ApiError(

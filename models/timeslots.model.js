@@ -19,6 +19,12 @@ const timeslotsSchema = new mongoose.Schema(
       max: 120,
       min: 30,
     },
+    sessionCountOfDay: {
+      type: Number,
+      required: true,
+      max: 12,
+      min: 1,
+    },
     availableDay: {
       type: String,
       required: true,

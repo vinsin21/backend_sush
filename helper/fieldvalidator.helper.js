@@ -2,18 +2,18 @@ function fieldValidator(validFields, data) {
   const missingFields = [];
   const invalidFields = [];
 
+  // Check for missing fields from validFields
   validFields.forEach((field) => {
-    // Check for missing field
-    if (data[field] === "undefined") {
+    if (data[field] === undefined) {
       missingFields.push(field);
     } else {
       // Specific validation logic for email
-      // if (
-      //   field === "email" &&
-      //   !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data[field])
-      // ) {
-      //   invalidFields.push({ field: "email", message: "Invalid email format" });
-      // }
+      if (
+        field === "email" &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data[field])
+      ) {
+        invalidFields.push({ field: "email", message: "Invalid email format" });
+      }
 
       // Specific validation logic for password
       if (
@@ -27,10 +27,29 @@ function fieldValidator(validFields, data) {
         });
       }
 
+      // Specific validation logic for username
+      if (
+        field === "username" &&
+        (typeof data[field] !== "string" || data[field].length < 3)
+      ) {
+        invalidFields.push({
+          field: "username",
+          message: "Username must be a string with at least 3 characters",
+        });
+      }
+
       // Add other specific validation logic as needed
+    }
+  });
+
+  // Check for any extra fields in data that are not in validFields
+  Object.keys(data).forEach((field) => {
+    if (!validFields.includes(field)) {
+      invalidFields.push({ field, message: "Field is not allowed" });
     }
   });
 
   return { missingFields, invalidFields };
 }
+
 module.exports = { fieldValidator };

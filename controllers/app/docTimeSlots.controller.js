@@ -115,7 +115,13 @@ const updateCurrentTimeSlots = async (req, res) => {
     const timeslotId = req.params;
     if (!timeslotId) throw new ApiError(400, "no time slot selected");
 
-    const validFields = [""];
+    const validFields = [
+      "sessionTimeInterval",
+      "sessionCountOfDay",
+      "availableFromTime",
+      "availableToTime",
+      "timeslots",
+    ];
     const requestedFields = req.body;
 
     const { invalidFields } = fieldValidator(validFields, requestedFields);
@@ -133,7 +139,11 @@ const updateCurrentTimeSlots = async (req, res) => {
         docRef: req.user?._id,
         timeslotId,
       },
-      { ...requestedFields },
+      {
+        $set: {
+          ...requestedFields,
+        },
+      },
       { new: true }
     ).select("-_id -docRef -__v");
 

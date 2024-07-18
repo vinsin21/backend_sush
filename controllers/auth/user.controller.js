@@ -25,13 +25,8 @@ const userRegister = async (req, res) => {
         } are missing`
       );
 
-    if (
-      await User.findOne({
-        name: requestedFields.name,
-        email: requestedFields.email,
-      })
-    )
-      throw new ApiError(409, "user already exists with name and email");
+    if (await User.findOne({ email: requestedFields.email }))
+      throw new ApiError(409, "user already exists with this email");
 
     const otp = otpGenerator();
     const userId = crypto.randomUUID();
@@ -73,7 +68,7 @@ const userRegister = async (req, res) => {
 
 const verifyAccount = async (req, res) => {
   try {
-    const validFields = ["name", "email", "otp"];
+    const validFields = ["email", "otp"];
     const requestedFields = req.body;
 
     const { invalidFields, missingFields } = fieldValidator(
@@ -111,9 +106,9 @@ const verifyAccount = async (req, res) => {
 
     const mailOptions = {
       from: process.env.EMAIL || "",
-      to: newUser.email,
+      to: user.email,
       subject: "Account Verification Successful",
-      text: `Name: ${newUser.name}\nEmail: ${newUser.email}\nMessage: Your account has be verified successfully `,
+      text: `Name: ${user.name}\nEmail: ${user.email}\nMessage: Your account has be verified successfully `,
     };
 
     await transporter.sendMail(mailOptions);
@@ -190,7 +185,7 @@ const userLogin = async (req, res) => {
       .send(
         new ApiResponse(
           200,
-          { name: user.name, email: user.email, role: user.role },
+          { name: user.name, email: user.email, role: user.role, accessToken },
           "user logged in successfully"
         )
       );

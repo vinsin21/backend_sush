@@ -10,6 +10,7 @@ const getAllActiveDoctors = async (req, res) => {
       role: "DOCTOR",
       isActive: true,
       isVerified: true,
+      isDisabledByAdmin: false,
     });
 
     for (let i = 0; i < allDoctors.length; i++) {

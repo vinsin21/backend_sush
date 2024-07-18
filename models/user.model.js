@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isDisabledByAdmin: {
+      type: Boolean,
+      default: false,
+    },
     otp: {
       type: Number,
     },

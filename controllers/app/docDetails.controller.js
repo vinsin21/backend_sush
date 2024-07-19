@@ -8,6 +8,7 @@ const {
   relativePathGenerator,
   absolutePathGenerator,
 } = require("../../utils/pathGenerators");
+const { default: mongoose } = require("mongoose");
 
 const insertDocDetails = async (req, res) => {
   try {
@@ -135,13 +136,14 @@ const getCurrDocDetails = async (req, res) => {
     if (!req.user?._id || req.role !== "DOCTOR")
       throw new ApiError(401, "invalid user credentials");
 
-    const docData = await DocDetails.findById(req.user?._id).select(
-      "-_id -createdAt -updatedAt -__v"
-    );
+    const docData = await DocDetails.findOne({
+      userRef: new mongoose.Types.ObjectId(`${req.user?._id}`),
+    }).select("-_id -createdAt -updatedAt -__v");
 
     if (!docData)
       throw new ApiError(404, "currently logged user's data not found");
 
+    docData.userRef = undefined;
     docData.name = req.user?.name;
     docData.email = req.user?.email;
     docData.userId = req.user?.userId;
@@ -205,13 +207,18 @@ const updateDocDetails = async (req, res) => {
         "current user's/doctor's details not found in the system"
       );
 
-    const absolutePath = absolutePathGenerator(
-      docDetailsExists.professionalCertificates
-    );
+    //  MUST BE RESOLVED IN FUTURE
+    // if (docDetailsExists.professionalCertificates.length) {
+    //   const absolutePath = absolutePathGenerator(
+    //     docDetailsExists.professionalCertificates
+    //   );
 
-    for (let i = 0; i < absolutePath.length; i++) {
-      fs.unlinkSync(absolutePath[i]);
-    }
+    //   console.log(absolutePath);
+
+    //   for (let i = 0; i < absolutePath.length; i++) {
+    //     fs.unlinkSync(absolutePath[i]);
+    //   }
+    // }
 
     let professionalCertificates = [];
 

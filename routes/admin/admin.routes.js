@@ -5,11 +5,11 @@ const {
   disableDocter,
   verifyDocAccount,
 } = require("../../controllers/admin/admin.controller");
-const { verifyJwt } = require("../../middlewares/auth.middleware");
+const { auth } = require("../../middlewares/auth.middleware");
 
 const router = require("express").Router();
 
-router.use(verifyJwt);
+router.use(auth);
 
 router.route("/doc/sign-up").post(doctorRegister);
 router.route("/doc/verify-account").post(verifyDocAccount);

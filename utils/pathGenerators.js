@@ -1,5 +1,5 @@
 const http = process.env.HTTP || "http"; // Default to 'http' if not set
-const port = process.env.PORT || 3000; // Default to 3000 if not set
+const port = process.env.PORT || 5001; // Default to 3000 if not set
 const host = process.env.HOST || "localhost"; // Default to 'localhost' if not set
 
 const serverUrl = `${http}://${host}:${port}`;
@@ -25,14 +25,16 @@ function relativePathGenerator(files) {
 }
 
 function absolutePathGenerator(relativeFilesPath) {
-  if (Array.isArray(relativeFilesPath) || !relativeFilesPath.length) {
-    throw new Error("no files provided");
-  }
+  // if (Array.isArray(relativeFilesPath)) {
+  //   throw new Error("no files provided");
+  // }
+
+  console.log(relativeFilesPath);
 
   let absolutePath = [];
 
   for (let i = 0; i < relativeFilesPath.length; i++) {
-    const path = relativeFilesPath.replace(`${serverUrl}`, `./public/temp`);
+    const path = relativeFilesPath[i].replace(`${serverUrl}`, `.`);
 
     absolutePath.push(path);
   }

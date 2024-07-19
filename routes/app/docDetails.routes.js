@@ -3,12 +3,12 @@ const {
   updateDocDetails,
   getCurrDocDetails,
 } = require("../../controllers/app/docDetails.controller");
-const { verifyJwt } = require("../../middlewares/auth.middleware");
+const { auth } = require("../../middlewares/auth.middleware");
 const { upload } = require("../../middlewares/multer.middleware");
 
 const router = require("express").Router();
 
-router.use(verifyJwt);
+router.use(auth);
 
 router
   .route("/")

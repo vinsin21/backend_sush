@@ -8,14 +8,17 @@ const { otpGenerator } = require("../../utils/otpGenerator");
 
 const userRegister = async (req, res) => {
   try {
-    const validFields = ["name", "email", "password"];
+    const validFields = ["name", "email", "password", "role"];
     const requestedFields = req.body;
-    console.log(requestedFields);
 
-    const { invalidFields, missingFields } = fieldValidator(
+    let { invalidFields, missingFields } = fieldValidator(
       validFields,
       requestedFields
     );
+
+    if (missingFields.includes("role")) {
+      missingFields = missingFields.filter((field) => field !== "role");
+    }
 
     if (invalidFields.length || missingFields.length)
       throw new ApiError(
@@ -152,7 +155,7 @@ const userLogin = async (req, res) => {
 
     const user = await User.findOne({
       email: requestedFields.email,
-    }).select(" -_id -__v -updatedAt");
+    });
 
     if (!user)
       throw new ApiError(

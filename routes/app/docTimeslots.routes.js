@@ -3,11 +3,11 @@ const {
   getCurrentTimeSlots,
   updateCurrentTimeSlots,
 } = require("../../controllers/app/docTimeSlots.controller");
-const { verifyJwt } = require("../../middlewares/auth.middleware");
+const { auth } = require("../../middlewares/auth.middleware");
 
 const router = require("express").Router();
 
-router.use(verifyJwt);
+router.use(auth);
 
 router
   .route("/")

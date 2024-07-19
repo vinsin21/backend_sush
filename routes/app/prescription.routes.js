@@ -5,11 +5,11 @@ const {
   updateSinglePrescription,
   getCustomerPrescriptions,
 } = require("../../controllers/app/prescription.controller");
-const { verifyJwt } = require("../../middlewares/auth.middleware");
+const { auth } = require("../../middlewares/auth.middleware");
 
 const router = require("express").Router();
 
-router.use(verifyJwt);
+router.use(auth);
 
 router.route("/").post(makePrescription).get(getAllPrescriptions);
 

@@ -17,9 +17,29 @@ const adminRouter = require("./routes/admin/admin.routes");
 const app = express();
 
 dotenv.config({ path: "./secret.env" });
-app.use(cors({ origin: "*" }));
+
+const allowedOrigins = ["*", "http://localhost:5173"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("NOT ALLOWED BY CORS"));
+      }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: "Content-Type, Authorization",
+  })
+);
+
 app.use(json());
 app.use(urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.setHeader("Content-Type", "application/json");
+  next();
+});
 
 dbConnect();
 
@@ -29,13 +49,12 @@ app.get("/", (req, res) => {
 
 // routes will come here
 app.use("/api/v1", authRouter.router);
-app.use("/api/v1/doc", authRouter.router);
+app.use("/api/v1/admin", adminRouter.router);
 app.use("/api/v1/public/doc", publicApisRouter.router);
 app.use("/api/v1/doc/details", docDetailsRouter.router);
 app.use("/api/v1/doc/timeslots", docTimeSlotsRouter.router);
 app.use("/api/v1/doc/prescription", prescriptionRouter.router);
 app.use("/api/v1/doc/dashboard", docDashboardRouter.router);
-app.use("/api/v1/admin", adminRouter.router);
 
 // routes will end here
 

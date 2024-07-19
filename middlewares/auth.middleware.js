@@ -1,31 +1,47 @@
 const User = require("../models/user.model");
+const jwt = require("jsonwebtoken");
 
-const verifyJwt = async (req, res, next) => {
-  const token =
-    req.cookies?.accessToken ||
-    req.header("Authorization")?.replace("Bearer ", "");
-
-  if (!token) throw new ApiError(401, "unauthorized request");
-
+const auth = async (req, res, next) => {
   try {
-    const decodedToken = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { authorization } = req.headers;
 
-    const user = await User.findById(decodedToken?._id);
+    if (!authorization) {
+      return res.status(401).json({
+        message: "Authorization failed",
+      });
+    }
 
-    if (!user) throw new ApiError(401, "invalid access token");
-    req.user = user;
-    req.role = role;
+    const token = authorization.replace("Bearer ", "");
+
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
+
+    if (!payload) {
+      return res.status(401).json({
+        message: "Authorization failed",
+      });
+    }
+
+    if (payload.exp && payload.exp < Date.now() / 1000) {
+      return res.status(401).json({
+        message: "Token has expired",
+      });
+    }
+
+    const user = await User.findById(payload?._id);
+    if (!user) {
+      return res.status(401).json({
+        message: "User not found",
+      });
+    }
+    req.user = payload;
+    req.role = payload.role;
     next();
   } catch (error) {
-    return res
-      .status(error?.statusCode || 401)
-      .send(
-        new ApiError(
-          error.statusCode || 401,
-          error?.message || "unauthorised user"
-        )
-      );
+    console.error(error);
+    return res.status(401).json({
+      message: "Invalid token",
+    });
   }
 };
 
-module.exports = { verifyJwt };
+module.exports = { auth };

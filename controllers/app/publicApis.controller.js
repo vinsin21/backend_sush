@@ -4,6 +4,14 @@ const User = require("../../models/user.model");
 const { ApiError } = require("../../utils/ApiError");
 const { ApiResponse } = require("../../utils/ApiResponse");
 
+// all docs
+// single doctor
+// get all prescription
+// get single doc's pres
+// get all booking
+// get single booking
+// profile update
+
 const getAllActiveDoctors = async (req, res) => {
   try {
     const allDoctors = await User.find({

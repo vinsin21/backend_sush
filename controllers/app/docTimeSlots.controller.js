@@ -4,6 +4,12 @@ const crypto = require("crypto");
 const { ApiError } = require("../../utils/ApiError");
 const { ApiResponse } = require("../../utils/ApiResponse");
 
+function dateTimeParser(datetime) {
+  const timeString = datetime; // hr:min:sec   and i can also if the time session interval and input start and end time difference is equal to session time interval entered
+
+  return timeString + ":00";
+}
+
 const createDocTimeSlots = async (req, res) => {
   try {
     if (!req.user?._id || req.role !== "DOCTOR") {
@@ -12,12 +18,14 @@ const createDocTimeSlots = async (req, res) => {
 
     const validFields = [
       "sessionTimeInterval",
+      "sessionCountOfDay",
       "availableDay",
       "availableFromTime",
       "availableToTime",
-      "timeslots",
+      "startFrom",
+      "endAt",
     ];
-    const requestedFields = req.body;
+    let requestedFields = req.body;
 
     const { invalidFields, missingFields } = fieldValidator(
       validFields,
@@ -34,36 +42,61 @@ const createDocTimeSlots = async (req, res) => {
         } fields are missing`
       );
 
-    if (
-      !requestedFields.timeslots.startFrom ||
-      !requestedFields.timeslots.endAt
-    )
-      throw new ApiError(400, "invalid time slots start or end time");
+    if (!requestedFields.startFrom || !requestedFields.endAt)
+      throw new ApiError(400, "invalid time slots for start or end time");
 
     const timeslotsExists = await TimeSlots.findOne({
       docRef: req.user?._id,
       availableDay: requestedFields.availableDay,
-      "timeslots.startFrom": requestedFields.timeslots.startFrom,
-      "timeslots.endAt": requestedFields.timeslots.endAt,
     });
 
-    if (timeslotsExists) throw new ApiError(409, "time slot already exists");
+    if (timeslotsExists)
+      throw new ApiError(
+        409,
+        "time slot already exists, creating time slots for same days are not allowed, instead try updating them"
+      );
 
     const timeslotId = crypto.randomUUID();
 
-    const timeslots = await TimeSlots.create({
+    if (requestedFields.startFrom.length !== requestedFields.endAt.length)
+      throw new ApiError(400, "please provide all start and end time");
+
+    let timeslots = [];
+
+    for (let i = 0; i < requestedFields.startFrom.length; i++) {
+      const startFromTime = dateTimeParser(requestedFields.startFrom[i]);
+      const endAtTime = dateTimeParser(requestedFields.endAt[i]);
+
+      timeslots.push({
+        startFrom: startFromTime,
+        endAt: endAtTime,
+      });
+    }
+
+    requestedFields.startFrom = undefined;
+    requestedFields.endAt = undefined;
+
+    requestedFields.availableFromTime = dateTimeParser(
+      requestedFields.availableFromTime
+    );
+    requestedFields.availableToTime = dateTimeParser(
+      requestedFields.availableToTime
+    );
+    requestedFields.timeslots = timeslots;
+
+    const docTimeslots = await TimeSlots.create({
       docRef: req.user?._id,
       timeslotId,
       ...requestedFields,
     });
 
-    if (!timeslots)
+    if (!docTimeslots)
       throw new ApiError(500, "unable to create timeslots with current user");
 
     return res
       .status(201)
       .send(
-        new ApiResponse(201, timeslots, "time slots generated successfully")
+        new ApiResponse(201, docTimeslots, "time slots generated successfully")
       );
   } catch (error) {
     console.error("error occured :", error?.message);
@@ -88,9 +121,9 @@ const getCurrentTimeSlots = async (req, res) => {
     const timeslots = await TimeSlots.findOne({ docRef: req.user?._id });
 
     return res
-      .status(201)
+      .status(200)
       .send(
-        new ApiResponse(201, timeslots, "time slots generated successfully")
+        new ApiResponse(200, timeslots, "time slots generated successfully")
       );
   } catch (error) {
     console.error("error occured :", error?.message);
@@ -112,7 +145,7 @@ const updateCurrentTimeSlots = async (req, res) => {
       throw new ApiError(401, "Invalid user credentials");
     }
 
-    const timeslotId = req.params;
+    const { timeslotId } = req.query;
     if (!timeslotId) throw new ApiError(400, "no time slot selected");
 
     const validFields = [
@@ -120,9 +153,17 @@ const updateCurrentTimeSlots = async (req, res) => {
       "sessionCountOfDay",
       "availableFromTime",
       "availableToTime",
-      "timeslots",
+      "startFrom",
+      "endAt",
     ];
-    const requestedFields = req.body;
+    const requestedFields = ({
+      sessionTimeInterval,
+      sessionCountOfDay,
+      availableFromTime,
+      availableToTime,
+      startFrom,
+      endAt,
+    } = req.body);
 
     const { invalidFields } = fieldValidator(validFields, requestedFields);
 
@@ -133,6 +174,32 @@ const updateCurrentTimeSlots = async (req, res) => {
           invalidFields.length ? invalidFields : invalidFields.length
         } fields are invalid`
       );
+
+    if (startFrom.length !== endAt.length)
+      throw new ApiError(400, "please provide all start and end times");
+
+    requestedFields.availableFromTime = availableFromTime
+      ? dateTimeParser(availableFromTime)
+      : undefined;
+
+    requestedFields.availableToTime = availableToTime
+      ? dateTimeParser(availableToTime)
+      : undefined;
+
+    let timeslots = [];
+    if (startFrom.length == endAt.length) {
+      for (let i = 0; i < startFrom.length; i++) {
+        let startFromTime = dateTimeParser(startFrom[i]);
+        let endAtTime = dateTimeParser(endAt[i]);
+
+        timeslots.push({ startFrom: startFromTime, endAt: endAtTime });
+      }
+
+      requestedFields.startFrom = undefined;
+      requestedFields.endAt = undefined;
+
+      requestedFields.timeslots = timeslots;
+    }
 
     const updatedTimeslots = await TimeSlots.findOneAndUpdate(
       {

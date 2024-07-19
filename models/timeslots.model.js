@@ -39,21 +39,21 @@ const timeslotsSchema = new mongoose.Schema(
       ],
     },
     availableFromTime: {
-      type: Date,
+      type: String,
       required: true,
     },
     availableToTime: {
-      type: Date,
+      type: String,
       required: true,
     },
     timeslots: [
       {
         startFrom: {
-          type: Date,
+          type: String,
           required: true,
         },
         endAt: {
-          type: Date,
+          type: String,
           required: true,
         },
       },

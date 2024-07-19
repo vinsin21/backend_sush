@@ -96,15 +96,3 @@ Stores prescription details.
 ### Purpose:
 
 This model is used to store medical prescriptions given by doctors to patients. It maintains a record of the prescribed medications or treatments, linking them to both the doctor and the patient.
-
-## Additional Suggestions
-
-1. **Consistent Naming Conventions**: Ensure consistent naming conventions for fields and models.
-2. **Validation and Constraints**: Add validation and constraints to ensure data integrity.
-3. **Indexes**: Add indexes to frequently queried fields for better performance.
-4. **Relations**: Clearly define relationships and foreign keys to enforce referential integrity.
-5. **Timestamps**: Add fields for creation and update timestamps if needed.
-
-Feel free to reach out if you have any questions or need further clarifications!
-
-le readme.md tayar

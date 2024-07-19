@@ -11,6 +11,7 @@ const publicApisRouter = require("./routes/app/publicApis.routes");
 const docDetailsRouter = require("./routes/app/docDetails.routes");
 const docTimeSlotsRouter = require("./routes/app/docTimeslots.routes");
 const prescriptionRouter = require("./routes/app/prescription.routes");
+const docDashboardRouter = require("./routes/app/docDashboard.routes");
 const adminRouter = require("./routes/admin/admin.routes");
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/v1/public/doc", publicApisRouter.router);
 app.use("/api/v1/doc/details", docDetailsRouter.router);
 app.use("/api/v1/doc/timeslots", docTimeSlotsRouter.router);
 app.use("/api/v1/doc/prescription", prescriptionRouter.router);
+app.use("/api/v1/doc/dashboard", docDashboardRouter.router);
 app.use("/api/v1/admin", adminRouter.router);
 
 // routes will end here

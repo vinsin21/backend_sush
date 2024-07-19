@@ -230,4 +230,35 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-module.exports = { userRegister, verifyAccount, userLogin, getCurrentUser };
+const logoutUser = async (req, res) => {
+  try {
+    if (!req.user?._id) throw new ApiError("invalid user creds");
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV == "production",
+      })
+      .send(new ApiResponse(200, {}, "user logged out successfully"));
+  } catch (error) {
+    console.error("error occured :", error?.message);
+
+    return res
+      .status(error?.statusCode || 500)
+      .send(
+        new ApiError(
+          error?.statusCode || 500,
+          error?.message || "internal server error"
+        )
+      );
+  }
+};
+
+module.exports = {
+  userRegister,
+  verifyAccount,
+  userLogin,
+  getCurrentUser,
+  logoutUser,
+};

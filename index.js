@@ -20,17 +20,25 @@ dotenv.config({ path: "./secret.env" });
 
 const allowedOrigins = ["*", "http://localhost:5173"];
 
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("NOT ALLOWED BY CORS"));
+//       }
+//     },
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     allowedHeaders: "Content-Type, Authorization",
+//   })
+// );
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error("NOT ALLOWED BY CORS"));
-      }
-    },
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type, Authorization",
+    origin: "*",
+    credentials: true,
+    optionSuccessStatus: 200,
   })
 );
 

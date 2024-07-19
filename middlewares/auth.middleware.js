@@ -10,14 +10,21 @@ const verifyJwt = async (req, res, next) => {
   try {
     const decodedToken = Jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    const user = await User.findById(decodedToken?._id).select("-password");
+    const user = await User.findById(decodedToken?._id);
 
     if (!user) throw new ApiError(401, "invalid access token");
     req.user = user;
     req.role = role;
     next();
   } catch (error) {
-    throw new ApiError(401, error?.message || "invalid access token");
+    return res
+      .status(error?.statusCode || 401)
+      .send(
+        new ApiError(
+          error.statusCode || 401,
+          error?.message || "unauthorised user"
+        )
+      );
   }
 };
 
